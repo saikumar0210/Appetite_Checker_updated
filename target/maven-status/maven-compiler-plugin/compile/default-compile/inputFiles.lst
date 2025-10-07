@@ -1,0 +1,17 @@
+c:\Sai\API\Naics-demo\src\main\java\com\example\naicsdemo\config\CorsConfig.java
+c:\Sai\API\Naics-demo\src\main\java\com\example\naicsdemo\controller\CompanyController.java
+c:\Sai\API\Naics-demo\src\main\java\com\example\naicsdemo\controller\GeminiController.java
+c:\Sai\API\Naics-demo\src\main\java\com\example\naicsdemo\dto\AppendedData.java
+c:\Sai\API\Naics-demo\src\main\java\com\example\naicsdemo\dto\CompanyRequestDTO.java
+c:\Sai\API\Naics-demo\src\main\java\com\example\naicsdemo\dto\CompanyResponseDTO.java
+c:\Sai\API\Naics-demo\src\main\java\com\example\naicsdemo\dto\GeminiRecommendation.java
+c:\Sai\API\Naics-demo\src\main\java\com\example\naicsdemo\dto\MatchingData.java
+c:\Sai\API\Naics-demo\src\main\java\com\example\naicsdemo\entity\Company.java
+c:\Sai\API\Naics-demo\src\main\java\com\example\naicsdemo\exception\GlobalExceptionHandler.java
+c:\Sai\API\Naics-demo\src\main\java\com\example\naicsdemo\exception\ResourceNotFoundException.java
+c:\Sai\API\Naics-demo\src\main\java\com\example\naicsdemo\NaicsDemoApplication.java
+c:\Sai\API\Naics-demo\src\main\java\com\example\naicsdemo\repository\CompanyRepository.java
+c:\Sai\API\Naics-demo\src\main\java\com\example\naicsdemo\service\CompanyService.java
+c:\Sai\API\Naics-demo\src\main\java\com\example\naicsdemo\service\GeminiService.java
+c:\Sai\API\Naics-demo\src\main\java\com\example\naicsdemo\util\CompanySearchUtil.java
+c:\Sai\API\Naics-demo\src\main\java\com\example\naicsdemo\util\Constants.java

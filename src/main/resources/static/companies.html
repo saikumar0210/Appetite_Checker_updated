@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Companies</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.29.0/feather.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+          --bg:#f9fafb;
+          --card:#ffffff;
+          --border:#e5e7eb;
+          --text:#111827;
+          --muted:#6b7280;
+          --brand:#2563eb;
+          --brand-soft:#dbeafe;
+          --radius:14px;
+          --shadow:0 6px 20px rgba(0,0,0,.06);
+        }
+
+        *{box-sizing:border-box;}
+        body {
+          margin:0;
+          font-family:Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+          background:var(--bg);
+          color:var(--text);
+        }
+
+        /* Header */
+        .header {
+          background:#fff;
+          box-shadow:0 1px 3px rgba(0,0,0,.1);
+          padding:1rem 1.5rem;
+          display:flex;
+          justify-content:center;
+          align-items:center;
+        }
+        .header h1 { margin:0; font-size:1.8rem; font-weight:700; }
+
+        .main-content {
+          max-width:1280px;
+          margin:0 auto;
+          padding:1.5rem;
+        }
+        .page-title {
+          text-align:center;
+          font-size:2rem;
+          font-weight:700;
+          margin-bottom:2rem;
+          color:#1f2937;
+        }
+
+        /* Filters */
+        .filter-section {
+          background:#fff;
+          padding:1.5rem;
+          border-radius:.5rem;
+          box-shadow:0 1px 3px rgba(0,0,0,.1);
+          margin-bottom:1.5rem;
+        }
+        .filter-grid {
+          display:grid;
+          grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
+          gap:1rem;
+          margin-bottom:1rem;
+        }
+        .form-group { display:flex; flex-direction:column; }
+        .form-label {
+          font-size:.875rem;
+          font-weight:500;
+          margin-bottom:.25rem;
+          color:#374151;
+        }
+        .form-input, .form-select {
+          padding:.5rem;
+          border:1px solid #d1d5db;
+          border-radius:.375rem;
+          box-shadow:0 1px 2px rgba(0,0,0,.05);
+        }
+        .form-input:focus, .form-select:focus {
+          outline:none;
+          border-color:#3b82f6;
+          box-shadow:0 0 0 3px rgba(59,130,246,.1);
+        }
+        .input-with-icon {
+          position: relative;
+        }
+        .input-with-icon .form-input {
+          width: 100%;
+          padding: 0.5rem 2.5rem 0.5rem 0.5rem;
+          font-size: 0.875rem;
+        }
+        .input-with-icon .input-icon {
+          position: absolute;
+          right: 0.75rem;
+          top: 50%;
+          transform: translateY(-50%);
+          color: #9ca3af;
+          pointer-events: none;
+        }
+
+        /* Table */
+        .results-section {
+          background:#fff;
+          border-radius:.5rem;
+          box-shadow:0 1px 3px rgba(0,0,0,.1);
+          overflow:hidden;
+          margin-bottom:1.5rem;
+        }
+        .results-header {
+          border-bottom:1px solid #e5e7eb;
+          padding:1rem 1.5rem;
+        }
+        .results-title {
+          font-size:1.125rem;
+          font-weight:600;
+        }
+        .table-container { overflow-x:auto; overflow-y:visible; }
+        table {
+          width:100%;
+          border-collapse:collapse;
+        }
+        .table-header {
+          background:#f9fafb;
+        }
+        .table-header th {
+          padding:.75rem 1.5rem;
+          text-align:left;
+          font-size:.75rem;
+          font-weight:600;
+          color:#6b7280;
+          text-transform:uppercase;
+          letter-spacing:.05em;
+        }
+        .table-row {
+          border-bottom:1px solid #e5e7eb;
+          background:#fff;
+          transition:background .2s;
+        }
+        .table-row:nth-child(even) { background:#f9fafb; }
+        .table-row:hover { background:#eef2ff; }
+        .table-row td {
+          padding:1rem 1.5rem;
+          font-size:.9rem;
+          color:#1f2937;
+        }
+        .status-badge {
+          display:inline-flex;
+          align-items:center;
+          padding:.125rem .5rem;
+          border-radius:.375rem;
+          font-size:.75rem;
+          font-weight:600;
+          background:#dbeafe;
+          color:#1e40af;
+        }
+        .quote-btn {
+          background:#3b82f6;
+          color:#fff;
+          padding:.25rem .75rem;
+          border-radius:.375rem;
+          font-size:.75rem;
+          border:none;
+          cursor:pointer;
+        }
+        .quote-btn:hover { background:#2563eb; }
+        
+        .tooltip {
+          position: relative;
+          cursor: pointer;
+        }
+        .tooltip .tooltiptext {
+          visibility: hidden;
+          width: 300px;
+          background-color: #1f2937;
+          color: #fff;
+          text-align: left;
+          border-radius: 8px;
+          padding: 12px;
+          position: absolute;
+          z-index: 99999;
+          top: -10px;
+          right: 100%;
+          margin-right: 10px;
+          font-size: 13px;
+          line-height: 1.5;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+          white-space: normal;
+          word-wrap: break-word;
+        }
+        .tooltip:hover .tooltiptext {
+          visibility: visible;
+        }
+
+        /* AI Insights */
+        .ai-insights-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+          gap: 1rem;
+          margin-top: 1rem;
+        }
+        .ai-insight-card {
+          background: #fff;
+          border: 1px solid #e5e7eb;
+          border-radius: 12px;
+          padding: 1.5rem;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        .ai-insight-card.eligible {
+          border-left: 4px solid #10b981;
+        }
+        .ai-insight-card.restricted {
+          border-left: 4px solid #f59e0b;
+        }
+        .insight-header {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          margin-bottom: 0.75rem;
+        }
+        .insight-icon {
+          font-size: 1.2rem;
+        }
+        .insight-title {
+          font-weight: 600;
+          font-size: 1rem;
+        }
+        .insight-business {
+          font-size: 1.1rem;
+          font-weight: 600;
+          color: #1f2937;
+          margin-bottom: 0.5rem;
+        }
+        .insight-status {
+          font-size: 0.9rem;
+          color: #6b7280;
+          margin-bottom: 0.5rem;
+        }
+        .insight-score {
+          font-size: 0.9rem;
+          color: #6b7280;
+          margin-bottom: 1rem;
+        }
+        .ai-recommendation {
+          display: flex;
+          align-items: flex-start;
+          gap: 0.5rem;
+          background: #f8fafc;
+          padding: 0.75rem;
+          border-radius: 8px;
+          margin-bottom: 0.75rem;
+        }
+        .ai-recommendation.eligible {
+          color: #059669;
+        }
+        .ai-recommendation.restricted {
+          color: #d97706;
+        }
+        .score-improvement {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          font-size: 0.9rem;
+          color: #3b82f6;
+        }
+        .ready-status {
+          font-size: 0.9rem;
+          color: #6b7280;
+        }
+
+        /* Pagination */
+        .pagination {
+          display:flex;
+          align-items:center;
+          justify-content:space-between;
+          border-top:1px solid #e5e7eb;
+          padding:.75rem 1.5rem;
+        }
+        .pagination-info {
+          font-size:.875rem;
+          color:#6b7280;
+        }
+        .pagination-controls { display:flex; gap:.25rem; }
+        .pagination-btn {
+          border:1px solid #d1d5db;
+          background:#fff;
+          padding:.25rem .5rem;
+          border-radius:.375rem;
+          cursor:pointer;
+        }
+        .pagination-btn:hover { background:#f3f4f6; }
+
+        /* Trends section */
+        .state-toolbar{ display:flex; gap:8px; flex-wrap:wrap; margin:.75rem 0 1rem 0;}
+        .state-btn{ border:1px solid var(--border); background:#fff; color:#1f2937; border-radius:10px; padding:8px 12px; cursor:pointer; font-weight:500;}
+        .state-btn:hover{ background:var(--brand-soft); color:var(--brand)}
+        .state-btn.active{ background:var(--brand); color:#fff; border-color:transparent}
+        .cards{ display:grid; gap:16px; grid-template-columns: repeat(auto-fit, minmax(280px,1fr)); }
+        .card{ background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:14px; box-shadow:var(--shadow); display:flex; flex-direction:column; gap:10px; min-height:220px;}
+        .card h3{ font-size:16px; margin:0; font-weight:600}
+        .chart-wrap{ flex:1; display:flex; align-items:center}
+        canvas{ width:100% !important; height:180px !important;}
+        /* --- Gemini AI Recommendation Engine --- */
+.flow-step {
+    background: #fff;
+    border-left: 4px solid #2563eb;
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    transition: transform 0.2s;
+}
+.flow-step:hover {
+    transform: translateY(-2px);
+}
+
+.step-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.step-number {
+    font-weight: 700;
+    color: #fff;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+}
+
+.step-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.step-content {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.step-description {
+    font-size: 0.95rem;
+    color: #374151;
+}
+
+.highlight-box {
+    background: #f3f4f6;
+    border-left: 4px solid #f97316;
+    padding: 12px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+}
+
+.code-block {
+    background: #1e293b;
+    color: #f8fafc;
+    padding: 12px;
+    border-radius: 6px;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.85rem;
+    overflow-x: auto;
+    line-height: 1.4;
+}
+
+.code-block .json-key { color: #f59e0b; }
+.code-block .json-string { color: #22c55e; }
+
+.process-details {
+    font-size: 0.9rem;
+    color: #374151;
+}
+
+.process-list {
+    list-style: none;
+    padding-left: 0;
+    margin: 4px 0 0 0;
+}
+
+.process-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    margin-bottom: 6px;
+}
+
+.process-icon {
+    font-size: 1rem;
+    line-height: 1;
+}
+
+.results-grid {
+    display: grid;
+    gap: 12px;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+.result-item {
+    background: #f9fafb;
+    padding: 12px;
+    border-radius: 6px;
+    border: 1px solid #e5e7eb;
+}
+
+.result-header {
+    font-weight: 600;
+    margin-bottom: 6px;
+    font-size: 0.95rem;
+}
+
+.result-details {
+    font-size: 0.85rem;
+    color: #1f2937;
+}
+
+.flow-arrow {
+    text-align: center;
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+    color: #6b7280;
+}
+.button-group {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+    padding-radius: 8px;
+}
+.btn-secondary {
+    background: #e5e7eb;
+    color: #374151;
+}
+.btn-primary {
+    background: #3b82f6;
+    color: #fff;
+}
+.btn {
+    padding: .5rem 1rem;
+    border-radius: .375rem;
+    font-size: .875rem;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+}
+
+/* Gemini Cards Styling */
+#geminiCards {
+    overflow: visible;
+    z-index: 100;
+}
+#geminiCards .card {
+    min-height: auto;
+    padding: 16px;
+    margin-bottom: 12px;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+#geminiCards .card h3 {
+    color: #2563eb;
+    margin-bottom: 8px;
+}
+#geminiCards .card p {
+    margin: 0;
+    line-height: 1.5;
+    color: #374151;
+}
+    </style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+
+</div>
+
+<div class="main-content">
+    <h1 class="page-title">Appetite Checker</h1>
+
+    <!-- Filters -->
+    <!-- Filters -->
+    <section class="filter-section">
+        <div class="filter-grid" style="grid-template-columns:1fr 1fr;">
+            <!-- State / Province -->
+            <div class="form-group">
+                <label class="form-label">Select State...</label>
+                <select id="stateFilter" class="form-select">
+                    <option value="">Select State...</option>
+                </select>
+            </div>
+
+            <!-- Search input -->
+            <div class="form-group">
+                <label class="form-label">Search by class code, NAICS code or descriptions</label>
+                <input type="text" id="searchInput" class="form-input" placeholder="Search...">
+            </div>
+        </div>
+
+        <!-- Buttons below inputs -->
+        <div class="button-group">
+            <button class="btn btn-primary" onclick="searchData()">Search</button>
+            <button class="btn btn-secondary" onclick="clearFilters()">Clear All Filters</button>
+        </div>
+    </section>
+
+
+
+    <!-- Results Table -->
+    <section class="results-section">
+        <div class="results-header">
+            <h3 class="results-title">Appetite Data</h3>
+        </div>
+        <div class="table-container">
+            <table>
+                <thead class="table-header">
+                <tr>
+                    <th>Request ID</th>
+                    <th>Confidence Code</th>
+                    <th>CLASS CODE</th>
+                    <th>Description</th>
+                    <th>NAICS Code</th>
+                    <th>NAICS Description</th>
+                    <th>Action</th>
+                </tr>
+                </thead>
+                <tbody id="tableBody"></tbody>
+            </table>
+        </div>
+        <div class="pagination">
+            <div class="pagination-info">Items per page: 25 ▼</div>
+            <div class="pagination-controls">
+                <button class="pagination-btn">‹‹</button>
+                <button class="pagination-btn">‹</button>
+                <button class="pagination-btn">›</button>
+                <button class="pagination-btn">››</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Trends Section -->
+    <section class="filter-section">
+        <h3 class="results-title" style="margin-bottom:.25rem;">Trends</h3>
+        <div class="state-toolbar" id="stateToolbar">
+            <!-- Buttons populated dynamically from states in file -->
+        </div>
+        <div class="cards">
+            <div class="card">
+                <h3>Eligibility</h3>
+                <div class="chart-wrap"><canvas id="eligibilityChart"></canvas></div>
+            </div>
+            <div class="card">
+                <h3>Submissions</h3>
+                <div class="chart-wrap"><canvas id="submissionsChart"></canvas></div>
+            </div>
+            <div class="card">
+                <h3>Appetite Share</h3>
+                <div class="chart-wrap"><canvas id="appetiteShareChart"></canvas></div>
+            </div>
+            <div class="card">
+                <h3>Rules By Product</h3>
+                <div class="chart-wrap"><canvas id="rulesByProductChart"></canvas></div>
+            </div>
+            <div class="card">
+                <h3>Submission Mix</h3>
+                <div class="chart-wrap"><canvas id="submissionMixChart"></canvas></div>
+            </div>
+        </div>
+    </section>
+
+
+
+    <!-- AI Insights Section -->
+    <section class="filter-section">
+        <h3 class="results-title">🤖 AI Insights & Recommendations</h3>
+        <div id="aiInsights" class="ai-insights-grid"></div>
+    </section>
+
+
+
+</div>
+
+<script>
+    const tableBody = document.getElementById('tableBody');
+    const searchInput = document.getElementById('searchInput');
+    const stateFilter = document.getElementById('stateFilter');
+    const stateToolbar = document.getElementById('stateToolbar');
+    let companiesData = [];
+    const charts = {};
+
+    // Fetch data
+    fetch('/api/companies/all')
+      .then(res => res.json())
+      .then(data => {
+        companiesData = data;
+        populateTable(companiesData);
+        populateStateDropdown(companiesData);
+        populateStateToolbar();
+        feather.replace();
+        initTrends();
+        generateAIInsights();
+      })
+      .catch(err => console.error('Error fetching companies:', err));
+
+    function populateTable(data) {
+      tableBody.innerHTML = '';
+      data.forEach((c, idx) => {
+        const confidence = Number(c.matchingData?.['Confidence Code'] ?? 0);
+        const row = document.createElement('tr');
+        row.className = 'table-row';
+        row.innerHTML = `
+          <td>${c.matchingData?.['Request ID'] ?? 'null'}</td>
+          <td><span class="status-badge">${c.matchingData?.['Confidence Code'] ?? 'null'}</span></td>
+          <td>${c.matchingData?.['DUNS #'] ?? 'null'}</td>
+          <td>${c.appendedData?.['NAICS 1 Description'] ?? 'null'}</td>
+          <td>${c.appendedData?.['NAICS 1 Code'] ?? 'null'}</td>
+          <td>${c.appendedData?.['NAICS 2 Description'] ?? 'null'}</td>
+          <td>
+            ${confidence < 5
+              ? `<div class="tooltip" onclick="getRecommendation('${c.matchingData?.['Request ID'] || idx}', '${(c.appendedData?.['NAICS 1 Description'] || 'Business').replace(/'/g, "\\'")}}', '${c.appendedData?.['NAICS 1 Code'] || 'N/A'}', '${c.matchingData?.['Confidence Code'] || 'N/A'}')">
+                   <i data-feather="alert-circle" style="color:#ef4444;"></i>
+                   <span class="tooltiptext"><strong>Not Eligible</strong><br>Reason: Low confidence score<br>Recommendation: Improve data quality</span>
+                 </div>`
+              : `<button class="quote-btn" data-idx="${idx}">Quote</button>`}
+          </td>
+        `;
+        tableBody.appendChild(row);
+      });
+      feather.replace();
+
+    }
+
+    function populateStateDropdown(data) {
+      const states = [...new Set(data.map(c => c.appendedData?.['State/Province']).filter(Boolean))];
+      states.sort();
+      states.forEach(s => {
+        const option = document.createElement('option');
+        option.value = s;
+        option.textContent = s;
+        stateFilter.appendChild(option);
+      });
+    }
+
+    function filterData() {
+      const keyword = searchInput.value.toLowerCase();
+      const state = stateFilter.value;
+      const filtered = companiesData.filter(c => {
+        const matchesKeyword = (
+          (c.matchingData?.['DUNS #']?.toLowerCase().includes(keyword)) ||
+          (c.appendedData?.['NAICS 1 Code']?.toLowerCase().includes(keyword)) ||
+          (c.appendedData?.['NAICS 1 Description']?.toLowerCase().includes(keyword)) ||
+          (c.appendedData?.['NAICS 2 Description']?.toLowerCase().includes(keyword))
+        );
+        const matchesState = !state || c.appendedData?.['State/Province'] === state;
+        return matchesKeyword && matchesState;
+      });
+      populateTable(filtered);
+    }
+
+    function searchData() {
+      filterData();
+    }
+
+    function clearFilters() {
+      searchInput.value = '';
+      stateFilter.value = '';
+      document.getElementById('restrictedCard').style.display = 'none';
+      document.getElementById('improvementCard').style.display = 'none';
+      populateTable(companiesData);
+    }
+
+
+
+
+    // --- Trends Section ---
+    function populateStateToolbar() {
+      const states = [...new Set(companiesData.map(c => c.appendedData?.['State/Province']).filter(Boolean))];
+      states.sort();
+      states.forEach((s,i)=>{
+        const btn = document.createElement('button');
+        btn.className = 'state-btn';
+        if(i===0) btn.classList.add('active');
+        btn.textContent = s;
+        btn.addEventListener('click',()=>{
+          document.querySelectorAll('.state-btn').forEach(b=>b.classList.remove('active'));
+          btn.classList.add('active');
+          updateChartsForState(s);
+        });
+        stateToolbar.appendChild(btn);
+      });
+    }
+
+    function randomData(length=6,max=100){
+      return Array.from({length},()=>Math.floor(Math.random()*max));
+    }
+
+    function updateChartsForState(state){
+      const colors = {
+        eligibility:['#2563eb','#3b82f6','#60a5fa','#93c5fd','#bfdbfe','#dbeafe'],
+        submissions:'#ef4444',
+        submissionsBG:'rgba(239,68,68,0.2)',
+        appetite:['#f59e0b','#facc15','#eab308'],
+        rules:['#10b981','#34d399','#6ee7b7','#d1fae5'],
+        mix:['#8b5cf6','#a78bfa','#c4b5fd']
+      };
+
+      if(charts.eligibilityChart) charts.eligibilityChart.data.datasets[0].data=randomData();
+      if(charts.submissionsChart) charts.submissionsChart.data.datasets[0].data=randomData();
+      if(charts.appetiteShareChart) charts.appetiteShareChart.data.datasets[0].data=randomData(3,50);
+      if(charts.rulesByProductChart) charts.rulesByProductChart.data.datasets[0].data=randomData(4,20);
+      if(charts.submissionMixChart) charts.submissionMixChart.data.datasets[0].data=randomData(3,30);
+
+      charts.eligibilityChart.data.datasets[0].backgroundColor = colors.eligibility;
+      charts.submissionsChart.data.datasets[0].borderColor = colors.submissions;
+      charts.submissionsChart.data.datasets[0].backgroundColor = colors.submissionsBG;
+      charts.appetiteShareChart.data.datasets[0].backgroundColor = colors.appetite;
+      charts.rulesByProductChart.data.datasets[0].backgroundColor = colors.rules;
+      charts.submissionMixChart.data.datasets[0].backgroundColor = colors.mix;
+
+      charts.eligibilityChart.update();
+      charts.submissionsChart.update();
+      charts.appetiteShareChart.update();
+      charts.rulesByProductChart.update();
+      charts.submissionMixChart.update();
+    }
+
+    function initTrends() {
+      const ctx1 = document.getElementById('eligibilityChart').getContext('2d');
+      charts.eligibilityChart = new Chart(ctx1, {
+        type:'bar',
+        data:{
+          labels:['A','B','C','D','E','F'],
+          datasets:[{ label:'Eligibility', data: randomData(), backgroundColor:[] }]
+        },
+        options:{ responsive:true, maintainAspectRatio:false }
+      });
+
+      const ctx2 = document.getElementById('submissionsChart').getContext('2d');
+      charts.submissionsChart = new Chart(ctx2, {
+        type:'line',
+        data:{
+          labels:['Jan','Feb','Mar','Apr','May','Jun'],
+          datasets:[{ label:'Submissions', data: randomData(), borderColor:'#ef4444', backgroundColor:'rgba(239,68,68,0.2)', fill:true }]
+        },
+        options:{ responsive:true, maintainAspectRatio:false }
+      });
+
+      const ctx3 = document.getElementById('appetiteShareChart').getContext('2d');
+      charts.appetiteShareChart = new Chart(ctx3, {
+        type:'doughnut',
+        data:{ labels:['Low','Medium','High'], datasets:[{ label:'Appetite', data: randomData(3,50), backgroundColor:[] }] },
+        options:{ responsive:true, maintainAspectRatio:false }
+      });
+
+      const ctx4 = document.getElementById('rulesByProductChart').getContext('2d');
+      charts.rulesByProductChart = new Chart(ctx4, {
+        type:'bar',
+        data:{ labels:['P1','P2','P3','P4'], datasets:[{ label:'Rules', data: randomData(4,20), backgroundColor:[] }] },
+        options:{ responsive:true, maintainAspectRatio:false }
+      });
+
+      const ctx5 = document.getElementById('submissionMixChart').getContext('2d');
+      charts.submissionMixChart = new Chart(ctx5, {
+        type:'pie',
+        data:{ labels:['Type A','Type B','Type C'], datasets:[{ label:'Submission Mix', data: randomData(3,30), backgroundColor:[] }] },
+        options:{ responsive:true, maintainAspectRatio:false }
+      });
+
+      // Initialize first state charts
+      const firstState = document.querySelector('.state-btn.active')?.textContent;
+      if(firstState) updateChartsForState(firstState);
+    }
+
+    // --- Gemini AI Recommendations Functionality ---
+    function fetchGeminiRecommendations(payload) {
+      // Call the real Gemini API endpoint
+      return fetch('/api/gemini/recommendations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+      .then(res => {
+        if (!res.ok) throw new Error('Failed to fetch Gemini recommendations');
+        return res.json();
+      });
+    }
+
+    function getRecommendation(requestId, businessName, naicsCode, confidenceCode) {
+      const cardsContainer = document.getElementById('geminiCards');
+      const restrictedCard = document.getElementById('restrictedCard');
+      const improvementCard = document.getElementById('improvementCard');
+      
+
+      restrictedCard.style.display = 'block';
+      improvementCard.style.display = 'none';
+      
+      document.querySelector('#aiInsights').scrollIntoView({ behavior: 'smooth' });
+      
+      restrictedCard.innerHTML = `
+        <div class="ai-insight-card restricted">
+          <div class="insight-header">
+            <span class="insight-icon">⚠️</span>
+            <span class="insight-title">Restricted Result + AI Recommendations</span>
+          </div>
+          <div class="insight-business">${businessName} (${naicsCode})</div>
+          <div class="insight-status">Conditional acceptance</div>
+          <div class="insight-score">Low confidence score (${confidenceCode})</div>
+          <div style="margin-top: 12px; padding: 12px; background: #f8fafc; border-radius: 8px;">
+            <div style="font-weight: 600; margin-bottom: 6px;">Why Not Eligible:</div>
+            <div id="whyNotEligible" style="color: #374151;">Loading reason...</div>
+          </div>
+          <div class="ai-recommendation restricted">
+            <span>🤖</span>
+            <span id="aiRecommendation">Loading AI recommendation...</span>
+          </div>
+          <div class="score-improvement" onclick="getScoreImprovementTips('${requestId}', '${businessName}', '${naicsCode}', '${confidenceCode}')" style="cursor: pointer;">📊 Score improvement: ${confidenceCode} → ${Number(confidenceCode) + 2}</div>
+        </div>
+      `;
+      
+      fetch('/api/gemini/test-short-recommendation')
+        .then(res => res.text())
+        .then(responseText => {
+          try {
+            const json = JSON.parse(responseText);
+            if (json.candidates && json.candidates[0]?.content?.parts[0]?.text) {
+              const text = json.candidates[0].content.parts[0].text;
+              const [reason, recommendation] = text.split('**Recommendation:**');
+              const cleanReason = reason.replace('**Reason:**', '').trim();
+              const cleanRecommendation = recommendation ? recommendation.trim() : 'Improve data quality';
+              
+              document.getElementById('whyNotEligible').innerHTML = cleanReason;
+              document.getElementById('aiRecommendation').innerHTML = cleanRecommendation;
+              
+
+            }
+          } catch (e) {
+            document.getElementById('whyNotEligible').innerHTML = 'Failed to load reason';
+            document.getElementById('aiRecommendation').innerHTML = 'Improve data accuracy';
+
+          }
+        })
+        .catch(() => {
+          document.getElementById('whyNotEligible').innerHTML = 'Failed to load reason';
+          document.getElementById('aiRecommendation').innerHTML = 'Improve data quality';
+
+        });
+    }
+
+    function getScoreImprovementTips(requestId, businessName, naicsCode, confidenceCode) {
+      const improvementCard = document.getElementById('improvementCard');
+      improvementCard.style.display = 'block';
+      improvementCard.innerHTML = `
+        <div class="ai-insight-card" style="border-left: 4px solid #3b82f6;">
+          <div class="insight-header">
+            <span class="insight-icon">📊</span>
+            <span class="insight-title">Score Improvement: ${confidenceCode} → ${Number(confidenceCode) + 2}</span>
+          </div>
+          <div style="background: #e0f2fe; border: 1px solid #0ea5e9; border-radius: 8px; padding: 12px; margin-top: 12px;">
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+              <span style="color: #ef4444;">🎯</span>
+              <span style="font-weight: 600; color: #1f2937;">AI Score Improvement Tips</span>
+            </div>
+            <div style="color: #3b82f6;">Loading detailed improvement recommendations...</div>
+          </div>
+        </div>
+      `;
+      
+      const payload = {
+        businessType: businessName,
+        naicsCode: naicsCode,
+        currentScore: confidenceCode,
+        requestType: 'detailed_score_improvement'
+      };
+      
+      fetch('/api/gemini/recommendations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+        .then(res => res.text())
+        .then(responseText => {
+          try {
+            const json = JSON.parse(responseText);
+            let improvements = [];
+            
+            if (json.candidates && json.candidates[0]?.content?.parts[0]?.text) {
+              const aiText = json.candidates[0].content.parts[0].text;
+              improvements = aiText.split(/\n[-•*]\s*/).filter(tip => tip.trim().length > 10).slice(0, 4);
+            }
+            
+            // Ensure we have at least 3-4 detailed tips
+            if (improvements.length < 3) {
+              improvements = [
+                'Verify and update all company contact information including phone, address, and business registration details',
+                'Ensure NAICS codes accurately reflect primary business activities and update secondary codes if needed', 
+                'Complete missing data fields in business registration and provide additional documentation for verification',
+                'Review and correct any data inconsistencies between different business databases and registrations'
+              ];
+            }
+            
+            improvementCard.innerHTML = `
+              <div class="ai-insight-card" style="border-left: 4px solid #3b82f6;">
+                <div class="insight-header">
+                  <span class="insight-icon">📊</span>
+                  <span class="insight-title">Score Improvement: ${confidenceCode} → ${Number(confidenceCode) + 2}</span>
+                </div>
+                <div style="background: #e0f2fe; border: 1px solid #0ea5e9; border-radius: 8px; padding: 12px; margin-top: 12px;">
+                  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                    <span style="color: #ef4444;">🎯</span>
+                    <span style="font-weight: 600; color: #1f2937;">AI Score Improvement Tips</span>
+                  </div>
+                  <ul style="margin: 0; padding-left: 20px; color: #374151; line-height: 1.5;">
+                    ${improvements.map(tip => `<li style="margin-bottom: 6px;">${tip.trim()}</li>`).join('')}
+                  </ul>
+                </div>
+              </div>
+            `;
+          } catch (e) {
+            // Detailed fallback tips
+            const detailedTips = [
+              'Verify and update all company contact information including phone, address, and business registration details',
+              'Ensure NAICS codes accurately reflect primary business activities and update secondary codes if needed', 
+              'Complete missing data fields in business registration and provide additional documentation for verification',
+              'Review and correct any data inconsistencies between different business databases and registrations'
+            ];
+            
+            improvementCard.innerHTML = `
+              <div class="ai-insight-card" style="border-left: 4px solid #3b82f6;">
+                <div class="insight-header">
+                  <span class="insight-icon">📊</span>
+                  <span class="insight-title">Score Improvement: ${confidenceCode} → ${Number(confidenceCode) + 2}</span>
+                </div>
+                <div style="background: #e0f2fe; border: 1px solid #0ea5e9; border-radius: 8px; padding: 12px; margin-top: 12px;">
+                  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                    <span style="color: #ef4444;">🎯</span>
+                    <span style="font-weight: 600; color: #1f2937;">AI Score Improvement Tips</span>
+                  </div>
+                  <ul style="margin: 0; padding-left: 20px; color: #374151; line-height: 1.5;">
+                    ${detailedTips.map(tip => `<li style="margin-bottom: 6px;">${tip}</li>`).join('')}
+                  </ul>
+                </div>
+              </div>
+            `;
+          }
+        })
+        .catch(() => {
+          improvementCard.innerHTML = '<div style="color: red;">Failed to load improvement tips.</div>';
+        });
+    }
+
+    function generateAIInsights() {
+      const insightsContainer = document.getElementById('aiInsights');
+      const eligibleCompany = companiesData.find(c => Number(c.matchingData?.['Confidence Code']) >= 5) || companiesData[0];
+      
+      // Show only restricted card when clicked
+      insightsContainer.innerHTML = `
+        <div class="ai-insights-grid">
+          <div id="restrictedCard" style="display: none;"></div>
+          <div id="improvementCard" style="display: none;"></div>
+        </div>
+      `;
+    }
+</script>
+</body>
+</html>
