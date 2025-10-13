@@ -424,22 +424,42 @@ const Companies = () => {
             <div className="card">
               <h3>Eligibility</h3>
               <div className="chart-wrap"><canvas id="eligibilityChart"></canvas></div>
+              <div className="chart-note">
+                <strong>What it shows:</strong> Distribution of companies by confidence score levels.<br/>
+                <strong>Calculation:</strong> Count of companies grouped by their confidence code values (0-10).
+              </div>
             </div>
             <div className="card">
               <h3>Submissions</h3>
               <div className="chart-wrap"><canvas id="submissionsChart"></canvas></div>
+              <div className="chart-note">
+                <strong>What it shows:</strong> Number of company submissions across top 6 states.<br/>
+                <strong>Calculation:</strong> Count of companies per state, sorted by highest submissions first.
+              </div>
             </div>
             <div className="card">
               <h3>Appetite Share</h3>
               <div className="chart-wrap"><canvas id="appetiteShareChart"></canvas></div>
+              <div className="chart-note">
+                <strong>What it shows:</strong> Proportion of eligible vs restricted companies.<br/>
+                <strong>Calculation:</strong> Eligible = confidence score &ge;5, Restricted = confidence score &lt;5.
+              </div>
             </div>
             <div className="card">
               <h3>Rules By Product</h3>
               <div className="chart-wrap"><canvas id="rulesByProductChart"></canvas></div>
+              <div className="chart-note">
+                <strong>What it shows:</strong> Distribution of companies across top 4 NAICS industry codes.<br/>
+                <strong>Calculation:</strong> Count of companies grouped by primary NAICS code, sorted by frequency.
+              </div>
             </div>
             <div className="card">
               <h3>Submission Mix</h3>
               <div className="chart-wrap"><canvas id="submissionMixChart"></canvas></div>
+              <div className="chart-note">
+                <strong>What it shows:</strong> Breakdown of companies by confidence score ranges.<br/>
+                <strong>Calculation:</strong> High (&ge;7), Medium (5-6), Low (&lt;5) confidence score categories.
+              </div>
             </div>
           </div>
         </section>

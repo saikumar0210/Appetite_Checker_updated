@@ -337,3 +337,19 @@ canvas{ width:100% !important; height:180px !important;}
     align-items: center;
     gap: .5rem;
 }
+
+/* Chart Notes */
+.chart-note {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 0.8rem;
+    line-height: 1.4;
+    color: #475569;
+    margin-top: 8px;
+}
+.chart-note strong {
+    color: #1e293b;
+    font-weight: 600;
+}
