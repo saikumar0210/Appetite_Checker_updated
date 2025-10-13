@@ -49,7 +49,7 @@ public class GeminiService {
         );
         return callGeminiAPI(prompt);
     }
-
+//companies with low confidence
     public String getCompaniesWithLowConfidence() throws Exception {
         List<Company> companies = companyRepository.findAll();
         List<CompanyResponseDTO> lowConfidenceCompanies = new ArrayList<>();

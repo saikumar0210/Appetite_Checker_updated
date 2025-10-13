@@ -7,7 +7,8 @@ RUN npm ci --only=production
 COPY react-app/ ./
 RUN npm run build
 
-FROM maven:3.9.4-openjdk-21-slim AS backend-build
+# ✅ Use the correct Maven image available on Docker Hub
+FROM maven:3.9.4-eclipse-temurin-21 AS backend-build
 
 WORKDIR /app
 COPY pom.xml ./
