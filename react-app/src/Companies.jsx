@@ -66,6 +66,9 @@ const Companies = () => {
 
   const searchData = () => {
     filterData();
+    setTimeout(() => {
+      document.querySelector('.results-section')?.scrollIntoView({ behavior: 'smooth' });
+    }, 100);
   };
 
   const clearFilters = () => {
