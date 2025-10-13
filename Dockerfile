@@ -17,7 +17,7 @@ COPY src ./src
 COPY --from=frontend-build /app/react-app/build ./src/main/resources/static
 RUN mvn clean package -DskipTests -B
 
-#FROM openjdk:21-jre-slim
+FROM openjdk:21-jre-slim
 
 WORKDIR /app
 COPY --from=backend-build /app/target/naics-demo-*.jar app.jar
