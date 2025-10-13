@@ -1,0 +1,102 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test-backend:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up JDK 21
+      uses: actions/setup-java@v3
+      with:
+        java-version: '21'
+        distribution: 'temurin'
+        
+    - name: Cache Maven packages
+      uses: actions/cache@v3
+      with:
+        path: ~/.m2
+        key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+        restore-keys: ${{ runner.os }}-m2
+        
+    - name: Run backend tests
+      run: mvn clean test
+      
+    - name: Build backend
+      run: mvn clean package -DskipTests
+
+  test-frontend:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: react-app/package-lock.json
+        
+    - name: Install frontend dependencies
+      run: |
+        cd react-app
+        npm ci
+        
+    - name: Run frontend tests
+      run: |
+        cd react-app
+        npm test -- --coverage --watchAll=false
+        
+    - name: Build frontend
+      run: |
+        cd react-app
+        npm run build
+
+  build-and-deploy:
+    needs: [test-backend, test-frontend]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up JDK 21
+      uses: actions/setup-java@v3
+      with:
+        java-version: '21'
+        distribution: 'temurin'
+        
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: react-app/package-lock.json
+        
+    - name: Build frontend
+      run: |
+        cd react-app
+        npm ci
+        npm run build
+        
+    - name: Copy frontend build to backend
+      run: |
+        mkdir -p src/main/resources/static
+        cp -r react-app/build/* src/main/resources/static/
+        
+    - name: Build backend with frontend
+      run: mvn clean package -DskipTests
+      
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: naics-demo-jar
+        path: target/*.jar

@@ -1,12 +1,12 @@
 com\example\naicsdemo\exception\ResourceNotFoundException.class
 com\example\naicsdemo\dto\CompanyResponseDTO.class
 com\example\naicsdemo\service\CompanyService.class
-com\example\naicsdemo\exception\GlobalExceptionHandler.class
 com\example\naicsdemo\dto\CompanyRequestDTO.class
-com\example\naicsdemo\repository\CompanyRepository.class
 com\example\naicsdemo\dto\AppendedData.class
+com\example\naicsdemo\dto\MatchingData.class
+com\example\naicsdemo\util\CompanySearchUtil.class
+com\example\naicsdemo\exception\GlobalExceptionHandler.class
+com\example\naicsdemo\repository\CompanyRepository.class
 com\example\naicsdemo\NaicsDemoApplication.class
 com\example\naicsdemo\entity\Company.class
-com\example\naicsdemo\dto\MatchingData.class
 com\example\naicsdemo\controller\CompanyController.class
-com\example\naicsdemo\util\CompanySearchUtil.class
