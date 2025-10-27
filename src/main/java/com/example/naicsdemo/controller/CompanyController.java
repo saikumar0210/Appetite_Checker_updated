@@ -53,6 +53,26 @@ public class CompanyController {
         return ResponseEntity.ok(companyService.searchCompanies(keyword));
     }
 
+    // ✅ NEWLY ADDED - Advanced search with multiple criteria (replaces frontend filtering)
+    // Supports: keyword (DUNS/NAICS), state, naicsCode, duns parameters
+    // Called by UI instead of client-side filtering
+    @GetMapping("/search/advanced")
+    public ResponseEntity<List<CompanyResponseDTO>> advancedSearch(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String state,
+            @RequestParam(required = false) String naicsCode,
+            @RequestParam(required = false) String duns) {
+        return ResponseEntity.ok(companyService.advancedSearch(keyword, state, naicsCode, duns));
+    }
+
+    // ✅ Get not eligible companies (confidence score < 5)
+    @GetMapping("/not-eligible")
+    public ResponseEntity<Page<CompanyResponseDTO>> getNotEligibleCompanies(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "15") int size) {
+        return ResponseEntity.ok(companyService.getNotEligibleCompanies(PageRequest.of(page, size)));
+    }
+
     // ✅ Test endpoint
     @GetMapping("/test")
     public ResponseEntity<String> test() {

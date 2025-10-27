@@ -34,21 +34,17 @@ public class NaicsDemoApplication {
 
 		@Override
 		public void run(ApplicationArguments args) throws Exception {
-			long existingCount = companyService.getCompanyCount();
-			if (existingCount > 0) {
-				System.out.println("✅ Data already exists: " + existingCount + " companies");
-				return;
-			}
-
+			// ========================================
+			// UPDATED FOR SMART MERGE FUNCTIONALITY
+			// ========================================
+			// Changed from simple count check to Smart Merge sync
 			ObjectMapper mapper = new ObjectMapper();
 			TypeReference<List<CompanyRequestDTO>> typeReference = new TypeReference<>() {};
 			InputStream inputStream = getClass().getResourceAsStream("/companies.json");
 			List<CompanyRequestDTO> companies = mapper.readValue(inputStream, typeReference);
 			
-			for (CompanyRequestDTO dto : companies) {
-				companyService.saveCompanyFromRequest(dto);
-			}
-			System.out.println("✅ Loaded " + companies.size() + " companies");
+			// Use Smart Merge to sync JSON data with database
+			companyService.smartMergeJsonData(companies);
 		}
 	}
 }

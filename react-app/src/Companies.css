@@ -260,6 +260,34 @@ table {
 .ai-recommendation.restricted {
   color: #d97706;
 }
+
+/* Bullet Point Styling - Match Reference Image */
+.ai-bullet-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.ai-bullet-item {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 12px;
+  line-height: 1.6;
+  font-size: 14px;
+  color: #374151;
+}
+.ai-bullet-point {
+  color: #1f2937;
+  font-weight: bold;
+  margin-right: 8px;
+  margin-top: 2px;
+  min-width: 8px;
+  font-size: 16px;
+}
+.ai-bullet-text {
+  flex: 1;
+  text-align: justify;
+}
+
 .score-improvement {
   display: flex;
   align-items: center;
@@ -352,4 +380,49 @@ canvas{ width:100% !important; height:180px !important;}
 .chart-note strong {
     color: #1e293b;
     font-weight: 600;
+}
+
+/* Loading Animations - Context Specific */
+.ai-loading-spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top: 2px solid #fff;
+    border-radius: 50%;
+    animation: ai-spin 1s linear infinite;
+}
+
+.search-loading-spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-left: 2px solid #fff;
+    border-radius: 50%;
+    animation: search-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes ai-spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+@keyframes search-pulse {
+    0%, 100% { 
+        transform: scale(1) rotate(0deg);
+        opacity: 1;
+    }
+    50% { 
+        transform: scale(1.1) rotate(180deg);
+        opacity: 0.7;
+    }
+}
+
+/* Lucide React Loader2 animation */
+.animate-spin {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
 }

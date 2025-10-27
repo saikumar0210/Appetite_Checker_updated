@@ -2,7 +2,7 @@
   "name": "naics-demo-react",
   "version": "1.0.0",
   "description": "React version of NAICS Demo Companies page",
-  "main": "src/index.js",
+  "main": "src/index.tsx",
   "proxy": "http://localhost:8080",
   "scripts": {
     "start": "react-scripts start",
@@ -11,12 +11,17 @@
     "eject": "react-scripts eject"
   },
   "dependencies": {
+    "chart.js": "^4.4.0",
+    "lucide-react": "^0.545.0",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "chart.js": "^4.4.0"
+    "react-dom": "^18.2.0"
   },
   "devDependencies": {
-    "react-scripts": "^5.0.1"
+    "@types/node": "^20.0.0",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "react-scripts": "^5.0.1",
+    "typescript": "^4.9.5"
   },
   "browserslist": {
     "production": [

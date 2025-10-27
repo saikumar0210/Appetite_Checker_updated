@@ -1,0 +1,549 @@
+openapi: 3.0.3
+info:
+  title: NAICS Demo Application API
+  description: |
+    A full-stack application for NAICS (North American Industry Classification System) company data management with AI-powered insights and recommendations.
+    
+    ## Features
+    - Company Data Management: Search, filter, and manage company information
+    - NAICS Code Integration: Automatic NAICS code matching and validation
+    - AI-Powered Insights: Get recommendations for improving confidence scores
+    - Interactive Dashboard: Real-time charts and analytics
+  version: 1.0.0
+  contact:
+    name: NAICS Demo API Support
+    email: support@naicsdemo.com
+  license:
+    name: MIT License
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:8080
+    description: Local development server
+  - url: https://api.naicsdemo.com
+    description: Production server
+
+tags:
+  - name: Companies
+    description: Company data management operations
+  - name: AI Recommendations
+    description: AI-powered business recommendations and insights
+
+paths:
+  # Company Management Endpoints
+  /api/companies:
+    post:
+      tags:
+        - Companies
+      summary: Add a single company
+      description: Creates a new company record in the system
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CompanyRequestDTO'
+            example:
+              companyName: "Tech Solutions Inc"
+              naics1Code: "541511"
+              naics1Description: "Custom Computer Programming Services"
+              city: "San Francisco"
+              stateProvince: "CA"
+              confidenceCode: "7"
+      responses:
+        '200':
+          description: Company created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompanyResponseDTO'
+        '400':
+          description: Invalid input data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/companies/bulk:
+    post:
+      tags:
+        - Companies
+      summary: Add multiple companies
+      description: Creates multiple company records in a single request
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/CompanyRequestDTO'
+      responses:
+        '200':
+          description: Companies created successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CompanyResponseDTO'
+        '400':
+          description: Invalid input data
+
+  /api/companies/all:
+    get:
+      tags:
+        - Companies
+      summary: Get all companies
+      description: Retrieves all companies as a simple list for UI display
+      responses:
+        '200':
+          description: List of all companies
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CompanyResponseDTO'
+
+  /api/companies/all/paginated:
+    get:
+      tags:
+        - Companies
+      summary: Get companies with pagination
+      description: Retrieves companies with pagination support
+      parameters:
+        - name: page
+          in: query
+          description: Page number (0-based)
+          required: false
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
+        - name: size
+          in: query
+          description: Number of items per page
+          required: false
+          schema:
+            type: integer
+            default: 15
+            minimum: 1
+            maximum: 100
+      responses:
+        '200':
+          description: Paginated list of companies
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedCompanyResponse'
+
+  /api/companies/search:
+    get:
+      tags:
+        - Companies
+      summary: Search companies by keyword
+      description: Search companies using a keyword that matches DUNS, NAICS codes, or descriptions
+      parameters:
+        - name: keyword
+          in: query
+          description: Search keyword
+          required: true
+          schema:
+            type: string
+            example: "manufacturing"
+      responses:
+        '200':
+          description: List of matching companies
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CompanyResponseDTO'
+
+  /api/companies/search/advanced:
+    get:
+      tags:
+        - Companies
+      summary: Advanced search with multiple criteria
+      description: Search companies using multiple criteria including keyword, state, NAICS code, and DUNS
+      parameters:
+        - name: keyword
+          in: query
+          description: Search keyword for DUNS/NAICS
+          required: false
+          schema:
+            type: string
+        - name: state
+          in: query
+          description: State/Province filter
+          required: false
+          schema:
+            type: string
+            example: "CA"
+        - name: naicsCode
+          in: query
+          description: NAICS code filter
+          required: false
+          schema:
+            type: string
+            example: "541511"
+        - name: duns
+          in: query
+          description: DUNS number filter
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of matching companies
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CompanyResponseDTO'
+
+  /api/companies/not-eligible:
+    get:
+      tags:
+        - Companies
+      summary: Get companies that are not eligible
+      description: Retrieves companies with confidence score less than 5 (not eligible for insurance)
+      parameters:
+        - name: page
+          in: query
+          description: Page number (0-based)
+          required: false
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
+        - name: size
+          in: query
+          description: Number of items per page
+          required: false
+          schema:
+            type: integer
+            default: 15
+            minimum: 1
+            maximum: 100
+      responses:
+        '200':
+          description: Paginated list of not eligible companies
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedCompanyResponse'
+
+  /api/companies/test:
+    get:
+      tags:
+        - Companies
+      summary: Test API connectivity
+      description: Simple endpoint to test API connectivity and get company count
+      responses:
+        '200':
+          description: API status and company count
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "API is working! Total companies: 150"
+
+  # AI Recommendations Endpoints
+  /api/gemini/test-short-recommendation:
+    get:
+      tags:
+        - AI Recommendations
+      summary: Test AI recommendation system
+      description: Test endpoint for AI recommendation system using predefined industrial manufacturing data
+      responses:
+        '200':
+          description: AI recommendation response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GeminiResponse'
+        '400':
+          description: Error generating recommendation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/gemini/business-recommendations:
+    post:
+      tags:
+        - AI Recommendations
+      summary: Get AI business recommendations
+      description: Generate AI-powered recommendations for business eligibility and improvement
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BusinessRecommendationRequest'
+            example:
+              businessType: "Food Service & Restaurants"
+              naicsCode: "722511"
+              confidenceScore: "3"
+      responses:
+        '200':
+          description: AI-generated business recommendations
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GeminiResponse'
+              example:
+                candidates:
+                  - content:
+                      parts:
+                        - text: |
+                            **Reason:** Low confidence score (3) indicates insufficient safety protocols and compliance documentation for restaurant operations
+                            
+                            **Recommendation:**
+                            • Implement comprehensive food safety management system with HACCP protocols
+                            • Establish proper documentation for health department compliance and regular inspections
+                            • Conduct regular staff training on food handling and safety procedures
+                            • Obtain necessary food service licenses and liability insurance coverage
+        '400':
+          description: Error generating recommendation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    CompanyRequestDTO:
+      type: object
+      required:
+        - companyName
+      properties:
+        companyName:
+          type: string
+          description: Name of the company
+          example: "Tech Solutions Inc"
+        naics1Code:
+          type: string
+          description: Primary NAICS code
+          example: "541511"
+        naics1Description:
+          type: string
+          description: Primary NAICS description
+          example: "Custom Computer Programming Services"
+        naics2Code:
+          type: string
+          description: Secondary NAICS code
+        naics2Description:
+          type: string
+          description: Secondary NAICS description
+        city:
+          type: string
+          description: Company city
+          example: "San Francisco"
+        stateProvince:
+          type: string
+          description: State or province
+          example: "CA"
+        duns:
+          type: string
+          description: DUNS number
+        confidenceCode:
+          type: string
+          description: Confidence score (0-10)
+          example: "7"
+        employeesTotal:
+          type: string
+          description: Total number of employees
+        salesVolumeUS:
+          type: string
+          description: Sales volume in US dollars
+
+    CompanyResponseDTO:
+      type: object
+      properties:
+        matchingData:
+          $ref: '#/components/schemas/MatchingData'
+        appendedData:
+          $ref: '#/components/schemas/AppendedData'
+        geminiRecommendation:
+          $ref: '#/components/schemas/GeminiRecommendation'
+
+    MatchingData:
+      type: object
+      properties:
+        requestId:
+          type: integer
+          description: Unique request identifier
+        layout:
+          type: string
+          description: Data layout format
+        matchMethod:
+          type: string
+          description: Matching method used
+        matchGrade:
+          type: string
+          description: Quality grade of the match
+        confidenceCode:
+          type: string
+          description: Confidence score (0-10)
+        duns:
+          type: string
+          description: DUNS number
+        matchesRemaining:
+          type: string
+          description: Remaining matches available
+        bemfab:
+          type: string
+          description: Business establishment match flag
+
+    AppendedData:
+      type: object
+      properties:
+        companyName:
+          type: string
+          description: Company name
+        naics1Code:
+          type: string
+          description: Primary NAICS code
+        naics1Description:
+          type: string
+          description: Primary NAICS description
+        naics2Code:
+          type: string
+          description: Secondary NAICS code
+        naics2Description:
+          type: string
+          description: Secondary NAICS description
+        city:
+          type: string
+          description: Company city
+        stateProvince:
+          type: string
+          description: State or province
+        employeesTotal:
+          type: string
+          description: Total employees
+        salesVolumeUS:
+          type: string
+          description: Sales volume in USD
+
+    GeminiRecommendation:
+      type: object
+      properties:
+        needsRecommendation:
+          type: boolean
+          description: Whether the company needs recommendations
+        eligibilityReason:
+          type: string
+          description: Reason for eligibility status
+        shortRecommendation:
+          type: string
+          description: Brief recommendation text
+
+    BusinessRecommendationRequest:
+      type: object
+      required:
+        - businessType
+        - naicsCode
+        - confidenceScore
+      properties:
+        businessType:
+          type: string
+          description: Type of business or industry
+          example: "Food Service & Restaurants"
+        naicsCode:
+          type: string
+          description: NAICS industry code
+          example: "722511"
+        confidenceScore:
+          type: string
+          description: Current confidence score (0-10)
+          example: "3"
+
+    GeminiResponse:
+      type: object
+      properties:
+        candidates:
+          type: array
+          items:
+            type: object
+            properties:
+              content:
+                type: object
+                properties:
+                  parts:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        text:
+                          type: string
+                          description: AI-generated recommendation text
+
+    PagedCompanyResponse:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/CompanyResponseDTO'
+        pageable:
+          type: object
+          properties:
+            pageNumber:
+              type: integer
+            pageSize:
+              type: integer
+            sort:
+              type: object
+        totalElements:
+          type: integer
+          description: Total number of companies
+        totalPages:
+          type: integer
+          description: Total number of pages
+        first:
+          type: boolean
+          description: Whether this is the first page
+        last:
+          type: boolean
+          description: Whether this is the last page
+        numberOfElements:
+          type: integer
+          description: Number of elements in current page
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error message
+          example: "Invalid input data provided"
+        timestamp:
+          type: string
+          format: date-time
+          description: Error timestamp
+        status:
+          type: integer
+          description: HTTP status code
+          example: 400
+
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: API key for authentication
+
+# Global security (can be overridden per operation)
+security:
+  - ApiKeyAuth: []
+
+# Additional metadata
+externalDocs:
+  description: Find more info about NAICS codes
+  url: https://www.census.gov/naics/

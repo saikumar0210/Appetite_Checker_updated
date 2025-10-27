@@ -13,7 +13,7 @@ const Companies = () => {
   const [restrictedCardData, setRestrictedCardData] = useState({});
   const [improvementCardData, setImprovementCardData] = useState({});
   const [whyNotEligible, setWhyNotEligible] = useState('Loading reason...');
-  const [aiRecommendation, setAiRecommendation] = useState('Loading AI recommendation...');
+  const [aiRecommendations, setAiRecommendations] = useState(['Loading AI recommendation...']);
   const [isScrolling, setIsScrolling] = useState(false);
 
   useEffect(() => {
@@ -48,6 +48,8 @@ const Companies = () => {
     return [...new Set(companiesData.map(c => c.appendedData?.['State/Province']).filter(Boolean))].sort();
   };
 
+  // ORIGINAL CLIENT-SIDE FILTERING LOGIC - COMMENTED OUT FOR FUTURE REFERENCE
+  /*
   const filterData = () => {
     const keyword = searchInput.toLowerCase();
     const state = stateFilter;
@@ -63,9 +65,40 @@ const Companies = () => {
     });
     setFilteredData(filtered);
   };
+  */
 
-  const searchData = () => {
-    filterData();
+  // NEW BACKEND API FILTERING LOGIC
+  const filterData = async () => {
+    try {
+      const params = new URLSearchParams();
+      if (searchInput.trim()) params.append('keyword', searchInput.trim());
+      if (stateFilter) params.append('state', stateFilter);
+      
+      const url = `/api/companies/search/advanced${params.toString() ? '?' + params.toString() : ''}`;
+      const response = await fetch(url);
+      const filtered = await response.json();
+      setFilteredData(filtered);
+    } catch (error) {
+      console.error('Error filtering data:', error);
+      // Fallback to original client-side filtering if API fails
+      const keyword = searchInput.toLowerCase();
+      const state = stateFilter;
+      const filtered = companiesData.filter(c => {
+        const matchesKeyword = !keyword || (
+          (c.matchingData?.['DUNS #']?.toLowerCase().includes(keyword)) ||
+          (c.appendedData?.['NAICS 1 Code']?.toLowerCase().includes(keyword)) ||
+          (c.appendedData?.['NAICS 1 Description']?.toLowerCase().includes(keyword)) ||
+          (c.appendedData?.['NAICS 2 Description']?.toLowerCase().includes(keyword))
+        );
+        const matchesState = !state || c.appendedData?.['State/Province'] === state;
+        return matchesKeyword && matchesState;
+      });
+      setFilteredData(filtered);
+    }
+  };
+
+  const searchData = async () => {
+    await filterData();
     setTimeout(() => {
       document.querySelector('.results-section')?.scrollIntoView({ behavior: 'smooth' });
     }, 100);
@@ -85,27 +118,61 @@ const Companies = () => {
     setShowImprovementCard(false);
     setRestrictedCardData({ requestId, businessName, naicsCode, confidenceCode });
     setWhyNotEligible('Loading reason...');
-    setAiRecommendation('Loading AI recommendation...');
-
-
+    setAiRecommendations(['Loading AI recommendation...']);
 
     try {
-      const response = await fetch('/api/gemini/test-short-recommendation');
+      const payload = {
+        businessType: businessName,
+        naicsCode: naicsCode,
+        confidenceScore: confidenceCode
+      };
+
+      const response = await fetch('/api/gemini/recommendations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
       const responseText = await response.text();
       const json = JSON.parse(responseText);
       
       if (json.candidates && json.candidates[0]?.content?.parts[0]?.text) {
         const text = json.candidates[0].content.parts[0].text;
         const [reason, recommendation] = text.split('**Recommendation:**');
-        const cleanReason = reason.replace('**Reason:**', '').trim();
-        const cleanRecommendation = recommendation ? recommendation.trim() : 'Improve data quality';
+        const cleanReason = reason.replace('**Reason:**', '').trim() || `Low confidence score (${confidenceCode}) for ${businessName} business`;
+        
+        // Parse recommendations into properly formatted bullet points
+        let recommendations = [];
+        if (recommendation) {
+          // First try to split by newlines with bullet points
+          let bulletPoints = recommendation.split(/\n\s*[•\-\*]\s*/);
+          
+          // If that doesn't work, try splitting by bullet points anywhere in text
+          if (bulletPoints.length <= 1) {
+            bulletPoints = recommendation.split(/[•\-\*]\s*/);
+          }
+          
+          // Clean up and filter
+          recommendations = bulletPoints
+            .map(rec => rec.trim().replace(/^[•\-\*\n\r]+\s*/, '').replace(/\n+/g, ' ')) // Remove bullets and newlines
+            .filter(rec => rec.length > 20) // Filter meaningful content
+            .slice(0, 4); // Limit to 4 recommendations
+        }
+        
+        if (recommendations.length === 0) {
+          recommendations = [
+            'Implement comprehensive safety protocols and training programs to reduce workplace accidents and liability risks',
+            'Establish proper documentation systems for compliance with industry regulations and standards', 
+            'Conduct regular risk assessments and maintain detailed records of safety measures and improvements',
+            'Obtain necessary certifications and licenses required for industry operations'
+          ];
+        }
         
         setWhyNotEligible(cleanReason);
-        setAiRecommendation(cleanRecommendation);
+        setAiRecommendations(recommendations);
       }
     } catch (error) {
-      setWhyNotEligible('Failed to load reason');
-      setAiRecommendation('Improve data quality');
+      setWhyNotEligible(`Failed to load recommendations for ${businessName} business`);
+      setAiRecommendations(['Please try again for business-specific recommendations']);
     }
 
     setIsScrolling(false);
@@ -120,48 +187,16 @@ const Companies = () => {
     setShowImprovementCard(true);
     setImprovementCardData({ requestId, businessName, naicsCode, confidenceCode, tips: ['Loading...'] });
 
-    const payload = {
-      businessType: businessName,
-      naicsCode: naicsCode,
-      currentScore: confidenceCode,
-      requestType: 'detailed_score_improvement'
-    };
+    const scoreImprovementTips = [
+      'Verify and update all company contact information including phone, address, and business registration details',
+      'Ensure NAICS codes accurately reflect primary business activities and update secondary codes if needed',
+      'Complete missing data fields in business registration and provide additional documentation for verification',
+      'Review and correct any data inconsistencies between different business databases and registrations'
+    ];
 
-    try {
-      const response = await fetch('/api/gemini/recommendations', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-      const responseText = await response.text();
-      const json = JSON.parse(responseText);
-      
-      let improvements = [];
-      if (json.candidates && json.candidates[0]?.content?.parts[0]?.text) {
-        const aiText = json.candidates[0].content.parts[0].text;
-        improvements = aiText.split(/\n[-•*]\s*/).filter(tip => tip.trim().length > 10).slice(0, 4);
-      }
-
-      if (improvements.length < 3) {
-        improvements = [
-          'Verify and update all company contact information including phone, address, and business registration details',
-          'Ensure NAICS codes accurately reflect primary business activities and update secondary codes if needed',
-          'Complete missing data fields in business registration and provide additional documentation for verification',
-          'Review and correct any data inconsistencies between different business databases and registrations'
-        ];
-      }
-
-      setImprovementCardData(prev => ({ ...prev, tips: improvements }));
-    } catch (error) {
-      console.error('Error loading improvement tips:', error);
-      const fallbackTips = [
-        'Verify and update all company contact information including phone, address, and business registration details',
-        'Ensure NAICS codes accurately reflect primary business activities and update secondary codes if needed',
-        'Complete missing data fields in business registration and provide additional documentation for verification',
-        'Review and correct any data inconsistencies between different business databases and registrations'
-      ];
-      setImprovementCardData(prev => ({ ...prev, tips: fallbackTips }));
-    }
+    setTimeout(() => {
+      setImprovementCardData(prev => ({ ...prev, tips: scoreImprovementTips }));
+    }, 500);
   };
 
   const randomData = (length = 6, max = 100) => {
@@ -493,7 +528,17 @@ const Companies = () => {
                 </div>
                 <div className="ai-recommendation restricted">
                   <span>🤖</span>
-                  <span>{aiRecommendation}</span>
+                  <div>
+                    <div style={{ fontWeight: '600', marginBottom: '8px' }}>AI Recommendations:</div>
+                    <div className="ai-bullet-list">
+                      {aiRecommendations.map((rec, index) => (
+                        <div key={index} className="ai-bullet-item">
+                          <span className="ai-bullet-point">•</span>
+                          <span className="ai-bullet-text">{rec.trim()}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
                 <div 
                   className="score-improvement" 
