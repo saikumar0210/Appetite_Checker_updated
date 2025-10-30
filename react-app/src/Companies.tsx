@@ -579,13 +579,49 @@ const Companies: React.FC = () => {
                 <div className="insight-business">{restrictedCardData.businessName} ({restrictedCardData.naicsCode})</div>
                 <div className="insight-status">Conditional acceptance</div>
                 <div className="insight-score">Low confidence score ({restrictedCardData.confidenceCode})</div>
-                <div style={{ marginTop: '12px', padding: '12px', background: '#f8fafc', borderRadius: '8px' }}>
-                  <div style={{ fontWeight: '600', marginBottom: '6px' }}>Why Not Eligible:</div>
-                  <div style={{ color: '#374151' }}>{whyNotEligible}</div>
+                <div style={{ marginTop: '12px', padding: '16px', background: '#f8fafc', borderRadius: '8px' }}>
+                  <div style={{ fontWeight: '600', marginBottom: '8px', color: '#ef4444' }}>Why Not Eligible:</div>
+                  <div style={{ color: '#374151', lineHeight: '1.6', fontSize: '14px', whiteSpace: 'pre-wrap' }}>{whyNotEligible}</div>
                 </div>
-                <div className="ai-recommendation restricted">
-                  <Bot size={16} />
-                  <span>{aiRecommendation}</span>
+                <div style={{ 
+                  marginTop: '16px',
+                  background: '#f0f9ff',
+                  padding: '16px',
+                  borderRadius: '8px',
+                  border: '1px solid #bae6fd'
+                }}>
+                  <div style={{ 
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    marginBottom: '12px',
+                    color: '#0284c7',
+                    fontWeight: '600'
+                  }}>
+                    <Bot size={16} />
+                    <span>Recommendations:</span>
+                  </div>
+                  <div style={{ 
+                    color: '#374151',
+                    fontSize: '14px',
+                    lineHeight: '1.6'
+                  }}>
+                    {aiRecommendation.split('•').map((rec, index) => {
+                      const trimmed = rec.trim();
+                      if (!trimmed) return null;
+                      return (
+                        <div key={index} style={{
+                          display: 'flex',
+                          gap: '8px',
+                          marginBottom: '8px',
+                          paddingLeft: '8px'
+                        }}>
+                          <span style={{ color: '#0284c7' }}>•</span>
+                          <span>{trimmed}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
                 <div 
                   className="score-improvement" 
